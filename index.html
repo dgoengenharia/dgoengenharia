@@ -1,0 +1,2805 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DGO Engenharia e Serviços — Novo Site</title>
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap">
+  
+  <!-- Basecoat CSS & System Shell -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/basecoat-css@1.0.2/dist/basecoat.cdn.min.css">
+  <style>
+/* Skip artifact shell — fixed styles served beside every artifact.
+   Complements basecoat; artifacts override --accent for their own identity. */
+:root {
+  color-scheme: light dark;
+  --accent: #2563eb;
+  --accent-contrast: #ffffff;
+  --accent-text: color-mix(in srgb, var(--accent) 72%, #000);
+  --bg: #f8f9fb;
+  --surface: #ffffff;
+  --text: #14171f;
+  --text-muted: #5b6472;
+  --border: rgba(20, 23, 31, 0.10);
+  --radius: 10px;
+  --shadow: 0 1px 3px rgba(20, 23, 31, 0.08);
+  --space: 16px;
+}
+/* Theme resolution. Without data-theme the viewer's system preference decides,
+   as it always did. With it, the artifact's own choice wins in BOTH directions:
+   a page that hardcodes one palette must not be handed the opposite set of
+   tokens by the machine it happens to be opened on. The dark values appear
+   twice because a media query cannot be folded into a selector list.
+   The attribute sits inside :where() so these blocks keep the specificity of a
+   bare :root — the page's own <style> is linked after this file and must go on
+   overriding any token it wants, exactly as it could before. */
+@media (prefers-color-scheme: dark) {
+  :root:where(:not([data-theme="light"])) {
+    --accent-text: color-mix(in srgb, var(--accent) 78%, #fff);
+    --bg: #101318;
+    --surface: #181c23;
+    --text: #eef1f6;
+    --text-muted: #9aa4b2;
+    --border: rgba(238, 241, 246, 0.12);
+    --shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+  }
+}
+:root:where([data-theme="dark"]) {
+  color-scheme: dark;
+  --accent-text: color-mix(in srgb, var(--accent) 78%, #fff);
+  --bg: #101318;
+  --surface: #181c23;
+  --text: #eef1f6;
+  --text-muted: #9aa4b2;
+  --border: rgba(238, 241, 246, 0.12);
+  --shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+:root:where([data-theme="light"]) { color-scheme: light; }
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+img { max-width: 100%; display: block; }
+
+.shell-container { max-width: 1100px; margin: 0 auto; padding: 0 20px; }
+.shell-section { padding: calc(var(--space) * 2) 0; }
+.shell-grid { display: grid; gap: var(--space); grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+.shell-toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: var(--space); }
+.shell-footer { padding: 24px 0 40px; color: var(--text-muted); font-size: 13px; }
+
+.shell-hero { padding: calc(var(--space) * 3) 0 calc(var(--space) * 2); }
+.shell-hero h1 { font-size: clamp(26px, 4vw, 40px); line-height: 1.15; margin: 0 0 10px; text-wrap: balance; }
+.shell-hero p { color: var(--text-muted); max-width: 60ch; margin: 0; }
+
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: var(--space);
+}
+
+.kpi { display: flex; flex-direction: column; gap: 4px; }
+.kpi .kpi-value { font-size: 28px; font-weight: 650; line-height: 1.1; }
+.kpi .kpi-label { font-size: 13px; color: var(--text-muted); }
+.kpi .kpi-delta { font-size: 12.5px; font-weight: 600; }
+.kpi .kpi-delta.up { color: #0a8f3c; }
+.kpi .kpi-delta.down { color: #cf3131; }
+
+table.shell-table { border-collapse: collapse; width: 100%; font-size: 14px; }
+table.shell-table th {
+  text-align: left; font-size: 11.5px; letter-spacing: 0.05em; text-transform: uppercase;
+  color: var(--text-muted); font-weight: 600;
+}
+table.shell-table th, table.shell-table td { padding: 9px 12px 9px 0; border-bottom: 1px solid var(--border); }
+table.shell-table td.num, table.shell-table th.num { text-align: right; font-variant-numeric: tabular-nums; }
+table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 6%, transparent); }
+
+.chart-box { width: 100%; min-height: 220px; }
+.chart-box svg { width: 100%; height: auto; display: block; }
+
+.muted { color: var(--text-muted); }
+.accent { color: var(--accent-text); }
+.shell-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 999px;
+  background: color-mix(in srgb, var(--accent) 12%, transparent); color: var(--accent-text);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .shell-fade { animation: shell-fade 400ms ease both; }
+  @keyframes shell-fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+}
+
+</style>
+  
+
+  <!-- Safety logo error handler -->
+  <script>
+    function handleLogoError(img) {
+      try {
+        if (img) {
+          img.style.display = 'none';
+          img.onerror = null;
+        }
+        var crop = document.getElementById('brandLogoCrop');
+        if (crop) crop.style.display = 'none';
+        var fallback = document.getElementById('brandLogoFallback');
+        if (fallback) fallback.style.display = 'flex';
+      } catch (e) {
+        console.error('Logo error handled:', e);
+      }
+    }
+  </script>
+
+  <style>
+    :root {
+      --accent: #4CAF50;
+      --accent-hover: #43a047;
+      --accent-glow: rgba(76, 175, 80, 0.25);
+      --accent-contrast: #090c09;
+      --bg-dark: #0d0f0d;
+      --bg-surface: #141714;
+      --bg-surface-elevated: #1b201b;
+      --border-subtle: #242b24;
+      --border-bright: #384538;
+      --text-white: #f5f7f5;
+      --text-muted: #9ba69b;
+      --font-display: 'Montserrat', system-ui, -apple-system, sans-serif;
+      --font-body: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      scroll-behavior: smooth;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      background-image: 
+        radial-gradient(circle at 50% 0%, rgba(76, 175, 80, 0.08) 0%, transparent 65%),
+        linear-gradient(rgba(13, 15, 13, 0.94), rgba(13, 15, 13, 0.94)),
+        repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.015) 0, rgba(255, 255, 255, 0.015) 1px, transparent 0, transparent 8px);
+      color: var(--text-white);
+      font-family: var(--font-body);
+      margin: 0;
+      padding: 0;
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    /* TYPOGRAPHY */
+    h1, h2, h3, h4, .brand-title {
+      font-family: var(--font-display);
+      letter-spacing: -0.02em;
+      margin: 0;
+      color: var(--text-white);
+    }
+
+    /* HEADER & NAV */
+    .header-fixed {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      background: #000000;
+      border-bottom: 1px solid var(--border-subtle);
+      transition: all 0.3s ease;
+      padding: 16px 0;
+      min-height: 96px;
+    }
+
+    .header-content {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 64px;
+    }
+
+    .brand-wrap {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      text-decoration: none;
+      flex-shrink: 0;
+    }
+
+    .brand-logo-crop {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .brand-logo-badge {
+      background: transparent;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 56px;
+      transition: transform 0.2s ease;
+    }
+
+    .brand-wrap:hover .brand-logo-badge {
+      transform: scale(1.03);
+    }
+
+    .brand-logo-img {
+      height: 54px;
+      width: auto;
+      max-width: 240px;
+      object-fit: contain;
+      display: block;
+      mix-blend-mode: screen;
+      background: transparent;
+      border: none;
+      padding: 0;
+      margin: 0;
+      flex-shrink: 0;
+    }
+
+    .footer-logo-badge {
+      background: transparent;
+      padding: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      height: 72px;
+      margin-bottom: 16px;
+      transition: transform 0.2s ease;
+    }
+
+    .footer-logo-badge:hover {
+      transform: scale(1.02);
+    }
+
+    .footer-logo-img {
+      height: 70px;
+      width: auto;
+      max-width: 280px;
+      object-fit: contain;
+      display: block;
+      mix-blend-mode: screen;
+    }
+
+    /* Prevent broken image icon from ever showing */
+    .brand-logo-img:-moz-broken,
+    .brand-logo-img:not([src]),
+    .brand-logo-img[src=""] {
+      display: none !important;
+    }
+
+    .brand-wrap:hover .brand-logo-img {
+      transform: scale(1.04);
+    }
+
+    .brand-logo-fallback {
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      line-height: 1;
+    }
+
+    .brand-logo-area {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    /* LOGO NOTA: Substitua o bloco abaixo por <img src="logo_folha_png.png" alt="DGO Logo" style="height:44px; width:auto;"> quando o arquivo estiver disponível */
+    .brand-dgo {
+      font-size: 1.9rem;
+      font-weight: 900;
+      line-height: 1;
+      letter-spacing: 0.04em;
+      color: #ffffff;
+      display: inline-flex;
+    }
+
+    .brand-dgo span {
+      color: var(--accent);
+    }
+
+    .brand-subtitle {
+      font-size: 0.62rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      letter-spacing: 0.18em;
+      margin-top: 3px;
+      text-transform: uppercase;
+    }
+
+    .badge-years {
+      background: rgba(76, 175, 80, 0.15);
+      border: 1px solid var(--accent);
+      color: var(--accent);
+      border-radius: 999px;
+      padding: 4px 10px;
+      font-size: 0.72rem;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      white-space: nowrap;
+      box-shadow: 0 0 10px rgba(76, 175, 80, 0.2);
+    }
+
+    .badge-years::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+      display: inline-block;
+      box-shadow: 0 0 6px var(--accent);
+    }
+
+    .desktop-nav {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+    }
+
+    .nav-link {
+      color: #cfd8cf;
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 600;
+      transition: color 0.2s ease;
+      position: relative;
+      padding: 6px 0;
+    }
+
+    .nav-link:hover, .nav-link.active {
+      color: #ffffff;
+    }
+
+    .nav-link::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 0%;
+      height: 2px;
+      background: var(--accent);
+      transition: width 0.25s ease;
+    }
+
+    .nav-link:hover::after {
+      width: 100%;
+    }
+
+    .lang-switcher {
+      display: inline-flex;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: 20px;
+      padding: 3px;
+      gap: 2px;
+      margin-left: 8px;
+    }
+
+    .lang-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 0.76rem;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 14px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .lang-btn.active {
+      background: var(--accent);
+      color: var(--accent-contrast);
+      box-shadow: 0 2px 6px rgba(76, 175, 80, 0.35);
+    }
+
+    .mobile-menu-toggle {
+      display: none;
+      background: none;
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      padding: 8px;
+      color: var(--text-white);
+      cursor: pointer;
+    }
+
+    .mobile-drawer {
+      display: none;
+      background: #000000;
+      border-bottom: 1px solid var(--border-subtle);
+      padding: 16px 20px 24px;
+    }
+
+    .mobile-drawer.open {
+      display: block;
+    }
+
+    .mobile-nav-list {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    /* BUTTONS */
+    .btn-dgo {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 13px 26px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      font-family: var(--font-display);
+      border-radius: 8px;
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      border: 1px solid transparent;
+      line-height: 1;
+    }
+
+    .btn-dgo-primary {
+      background-color: var(--accent);
+      color: #050a05;
+      box-shadow: 0 4px 16px rgba(76, 175, 80, 0.35);
+    }
+
+    .btn-dgo-primary:hover {
+      background-color: #57c75b;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 22px rgba(76, 175, 80, 0.5);
+    }
+
+    .btn-dgo-outline {
+      background-color: rgba(255, 255, 255, 0.03);
+      border-color: var(--border-bright);
+      color: var(--text-white);
+    }
+
+    .btn-dgo-outline:hover {
+      background-color: rgba(76, 175, 80, 0.1);
+      border-color: var(--accent);
+      color: #ffffff;
+      transform: translateY(-2px);
+    }
+
+    /* HERO SECTION */
+    .hero-section {
+      position: relative;
+      padding: 80px 0 60px;
+      overflow: hidden;
+      background-image: 
+        linear-gradient(rgba(10, 13, 10, 0.8), rgba(13, 15, 13, 0.94)),
+        url("https://generated-images.adapta.one/diego%40dgoservicos.com/01a118f1-6cd0-7619-a815-98d62418b5ac/2026-10-14T01-06-21-172Z_Original_user_intent_Dark_moody_industrial_photog.png");
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+    }
+
+    .hero-bg-accent {
+      position: absolute;
+      top: 10%;
+      right: -8%;
+      width: 550px;
+      height: 550px;
+      background: radial-gradient(circle, rgba(76, 175, 80, 0.12) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .hero-grid-lines {
+      position: absolute;
+      inset: 0;
+      background-image: 
+        linear-gradient(to right, rgba(255,255,255,0.03) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255,255,255,0.03) 1px, transparent 1px);
+      background-size: 60px 60px;
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.6;
+    }
+
+    .hero-inner {
+      position: relative;
+      z-index: 1;
+      max-width: 900px;
+    }
+
+    .hero-badge-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(76, 175, 80, 0.1);
+      border: 1px solid rgba(76, 175, 80, 0.3);
+      color: #72cf76;
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 6px 14px;
+      border-radius: 6px;
+      margin-bottom: 22px;
+    }
+
+    .hero-title {
+      font-size: clamp(2.3rem, 5vw, 3.8rem);
+      font-weight: 900;
+      line-height: 1.12;
+      color: #ffffff;
+      margin-bottom: 22px;
+      letter-spacing: -0.03em;
+    }
+
+    .hero-title span {
+      color: var(--accent);
+      background: linear-gradient(120deg, #7ad67e, #4CAF50);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero-subtitle {
+      font-size: clamp(1.05rem, 2vw, 1.25rem);
+      color: #b5c2b5;
+      max-width: 760px;
+      margin-bottom: 36px;
+      line-height: 1.6;
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-bottom: 56px;
+    }
+
+    /* KPI STATS ROW */
+    .kpi-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      position: relative;
+      z-index: 1;
+      border-top: 1px solid var(--border-subtle);
+      padding-top: 40px;
+    }
+
+    .kpi-item {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      padding: 22px 20px;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.25s ease, border-color 0.25s ease;
+    }
+
+    .kpi-item:hover {
+      transform: translateY(-3px);
+      border-color: rgba(76, 175, 80, 0.5);
+    }
+
+    .kpi-item::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+      background: var(--accent);
+    }
+
+    .kpi-number {
+      font-family: var(--font-display);
+      font-size: 2.3rem;
+      font-weight: 900;
+      color: #ffffff;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+
+    .kpi-label {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      font-weight: 600;
+      line-height: 1.3;
+    }
+
+    /* SECTION GENERAL */
+    .section-pad {
+      padding: 85px 0;
+      position: relative;
+    }
+
+    .section-header {
+      margin-bottom: 48px;
+    }
+
+    .section-eyebrow {
+      color: var(--accent);
+      font-size: 0.8rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      display: block;
+      margin-bottom: 8px;
+    }
+
+    .section-heading {
+      font-size: clamp(1.8rem, 3.2vw, 2.5rem);
+      font-weight: 800;
+      color: #ffffff;
+      line-height: 1.2;
+    }
+
+    .section-description {
+      color: var(--text-muted);
+      max-width: 680px;
+      font-size: 1.05rem;
+      margin-top: 12px;
+    }
+
+    /* ABOUT SECTION */
+    .about-box {
+      background: linear-gradient(135deg, rgba(20, 23, 20, 0.95), rgba(27, 32, 27, 0.8));
+      border: 1px solid var(--border-subtle);
+      border-radius: 16px;
+      padding: 44px;
+      position: relative;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+    }
+
+    .about-box p {
+      font-size: 1.22rem;
+      color: #e0e8e0;
+      line-height: 1.7;
+      margin: 0;
+      font-weight: 500;
+    }
+
+    .about-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 24px;
+    }
+
+    .about-tag {
+      background: rgba(76, 175, 80, 0.12);
+      border: 1px solid rgba(76, 175, 80, 0.35);
+      color: #92e096;
+      font-size: 0.82rem;
+      font-weight: 700;
+      padding: 6px 14px;
+      border-radius: 6px;
+    }
+
+    /* FRENTES (3 CARDS) */
+    .frentes-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+
+    .frente-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: 14px;
+      padding: 34px 28px;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    .frente-card:hover {
+      transform: translateY(-5px);
+      border-color: var(--accent);
+      background: var(--bg-surface-elevated);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(76, 175, 80, 0.15);
+    }
+
+    .frente-icon-wrap {
+      width: 58px;
+      height: 58px;
+      border-radius: 12px;
+      background: rgba(76, 175, 80, 0.15);
+      border: 1px solid rgba(76, 175, 80, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--accent);
+      margin-bottom: 22px;
+    }
+
+    .frente-tag {
+      font-size: 0.75rem;
+      font-weight: 800;
+      color: var(--accent);
+      letter-spacing: 0.1em;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+    }
+
+    .frente-title {
+      font-size: 1.35rem;
+      font-weight: 800;
+      color: #ffffff;
+      margin-bottom: 12px;
+      line-height: 1.3;
+    }
+
+    .frente-desc {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      line-height: 1.6;
+      margin: 0;
+    }
+
+    /* CARD DESTAQUE LATAM / EXTERIOR */
+    .frente-highlight-card {
+      margin-top: 26px;
+      background: linear-gradient(135deg, rgba(20, 26, 20, 0.96), rgba(15, 20, 15, 0.98));
+      border: 1px solid rgba(76, 175, 80, 0.45);
+      border-radius: 14px;
+      padding: 34px 32px;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .frente-highlight-card:hover {
+      border-color: var(--accent);
+      transform: translateY(-4px);
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.55), 0 0 26px rgba(76, 175, 80, 0.18);
+    }
+
+    .frente-highlight-header {
+      display: flex;
+      align-items: flex-start;
+      gap: 22px;
+      margin-bottom: 12px;
+    }
+
+    .frente-highlight-content {
+      flex: 1;
+    }
+
+    .frente-highlight-subtitle {
+      color: #bfe5c1;
+      font-size: 1.05rem;
+      font-weight: 600;
+      margin: 6px 0 12px;
+      line-height: 1.45;
+    }
+
+    .latam-benefits-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-top: 22px;
+      padding-top: 22px;
+      border-top: 1px solid var(--border-subtle);
+    }
+
+    .latam-benefit-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: #e5eee5;
+      background: rgba(76, 175, 80, 0.08);
+      border: 1px solid rgba(76, 175, 80, 0.25);
+      border-radius: 8px;
+      padding: 10px 14px;
+    }
+
+    .latam-benefit-item svg {
+      color: var(--accent);
+      flex-shrink: 0;
+    }
+
+    /* SEGMENTOS (INTERACTIVE CARDS) */
+    .segmentos-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+
+    .segmento-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: 14px;
+      padding: 0;
+      overflow: hidden;
+      transition: all 0.28s ease;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    .segmento-card:hover {
+      transform: translateY(-6px);
+      border-color: var(--accent);
+      background: #171d17;
+      box-shadow: 0 14px 32px rgba(0, 0, 0, 0.55), 0 0 24px rgba(76, 175, 80, 0.22);
+    }
+
+    .segmento-img-wrap {
+      position: relative;
+      width: 100%;
+      height: 160px;
+      overflow: hidden;
+      background: #0d0f0d;
+    }
+
+    .segmento-img-wrap::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to bottom, rgba(13, 15, 13, 0.1) 0%, rgba(20, 23, 20, 0.85) 100%);
+      pointer-events: none;
+    }
+
+    .segmento-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .segmento-card:hover .segmento-img {
+      transform: scale(1.03);
+    }
+
+    .segmento-body {
+      padding: 24px 26px 28px;
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+    }
+
+    .segmento-card.no-img .segmento-body {
+      padding: 32px 26px;
+    }
+
+    .segmento-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+
+    .segmento-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      background: rgba(76, 175, 80, 0.12);
+      border: 1px solid rgba(76, 175, 80, 0.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--accent);
+      flex-shrink: 0;
+    }
+
+    .segmento-title {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: #ffffff;
+      line-height: 1.3;
+      margin: 0;
+    }
+
+    .segmento-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .segmento-list li {
+      font-size: 0.9rem;
+      color: #cad4ca;
+      position: relative;
+      padding-left: 20px;
+      line-height: 1.45;
+    }
+
+    .segmento-list li::before {
+      content: '—';
+      position: absolute;
+      left: 0;
+      top: 0;
+      color: var(--accent);
+      font-weight: 700;
+    }
+
+    /* DIFERENCIAIS */
+    .diferenciais-strip {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: 16px;
+      padding: 36px 30px;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 24px;
+    }
+
+    .dif-item {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .dif-icon-circle {
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      background: rgba(76, 175, 80, 0.15);
+      border: 1px solid var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--accent);
+    }
+
+    .dif-title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #ffffff;
+      line-height: 1.35;
+      margin: 0;
+    }
+
+    .dif-sub {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+      margin: 0;
+    }
+
+    /* CONTATO SECTION */
+    .contact-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 36px;
+      align-items: start;
+    }
+
+    .contact-info-panel {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: 16px;
+      padding: 38px 32px;
+    }
+
+    .contact-channels {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      margin-top: 28px;
+    }
+
+    .contact-channel-item {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 14px 18px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border-subtle);
+      text-decoration: none;
+      color: var(--text-white);
+      transition: all 0.2s ease;
+    }
+
+    .contact-channel-item:hover {
+      background: rgba(76, 175, 80, 0.08);
+      border-color: var(--accent);
+      transform: translateX(4px);
+    }
+
+    .contact-channel-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      background: rgba(76, 175, 80, 0.15);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--accent);
+      flex-shrink: 0;
+    }
+
+    .contact-form-panel {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: 16px;
+      padding: 38px 32px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #cfd8cf;
+      margin-bottom: 8px;
+    }
+
+    .form-input, .form-textarea {
+      width: 100%;
+      background: #0d0f0d;
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      padding: 12px 14px;
+      color: #ffffff;
+      font-family: var(--font-body);
+      font-size: 0.95rem;
+      transition: border-color 0.2s ease;
+    }
+
+    .form-input:focus, .form-textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.2);
+    }
+
+    .form-textarea {
+      resize: vertical;
+      min-height: 110px;
+    }
+
+    /* FOOTER */
+    .site-footer {
+      border-top: 1px solid var(--border-subtle);
+      background: #090a09;
+      padding: 50px 0 30px;
+      color: var(--text-muted);
+      font-size: 0.88rem;
+    }
+
+    .footer-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      gap: 30px;
+      margin-bottom: 36px;
+    }
+
+    .footer-legal {
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      padding-top: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+      font-size: 0.82rem;
+    }
+
+    /* FLOATING WHATSAPP BUTTON */
+    .float-wa {
+      position: fixed;
+      bottom: 26px;
+      right: 26px;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: #25D366;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 6px 20px rgba(37, 211, 102, 0.45);
+      z-index: 999;
+      text-decoration: none;
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .float-wa:hover {
+      transform: scale(1.1);
+      box-shadow: 0 8px 26px rgba(37, 211, 102, 0.65);
+      color: #ffffff;
+    }
+
+    .float-wa-pulse {
+      position: absolute;
+      inset: -4px;
+      border-radius: 50%;
+      border: 2px solid #25D366;
+      animation: pulseWA 2s infinite;
+      opacity: 0.7;
+      pointer-events: none;
+    }
+
+    @keyframes pulseWA {
+      0% { transform: scale(1); opacity: 0.7; }
+      100% { transform: scale(1.35); opacity: 0; }
+    }
+
+    /* REVEAL ANIMATIONS */
+    .reveal {
+      opacity: 0;
+      transform: translateY(22px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+
+    .reveal.active {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* CLIENTES (MARQUEE CAROUSEL) */
+    .clients-section {
+      background: rgba(14, 18, 14, 0.7);
+      border-top: 1px solid var(--border-subtle);
+      border-bottom: 1px solid var(--border-subtle);
+      overflow: hidden;
+    }
+
+    .marquee-container {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin-top: 10px;
+    }
+
+    .marquee-row {
+      position: relative;
+      width: 100%;
+      overflow: hidden;
+      display: flex;
+      user-select: none;
+      mask-image: linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%);
+      -webkit-mask-image: linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%);
+    }
+
+    .marquee-track {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      width: max-content;
+      will-change: transform;
+    }
+
+    .marquee-left .marquee-track {
+      animation: marqueeScrollLeft 38s linear infinite;
+    }
+
+    .marquee-right .marquee-track {
+      animation: marqueeScrollRight 42s linear infinite;
+    }
+
+    .marquee-row:hover .marquee-track {
+      animation-play-state: paused;
+    }
+
+    @keyframes marqueeScrollLeft {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+
+    @keyframes marqueeScrollRight {
+      0% { transform: translateX(-50%); }
+      100% { transform: translateX(0); }
+    }
+
+    .client-card {
+      min-width: 200px;
+      height: 84px;
+      flex-shrink: 0;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px 24px;
+      transition: border-color 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
+      position: relative;
+      cursor: default;
+    }
+
+    .client-card:hover {
+      border-color: #4CAF50;
+      background: var(--bg-surface-elevated);
+      transform: translateY(-3px);
+      box-shadow: 0 8px 24px rgba(76, 175, 80, 0.24);
+    }
+
+    .client-brand-text {
+      font-family: var(--font-display);
+      font-size: 0.88rem;
+      font-weight: 700;
+      letter-spacing: 0.07em;
+      color: #ffffff;
+      text-align: center;
+      text-transform: uppercase;
+      line-height: 1.25;
+      user-select: none;
+      transition: color 0.25s ease;
+    }
+
+    .client-card:hover .client-brand-text {
+      color: #ffffff;
+    }
+
+    /* RESPONSIVE BREAKPOINTS */
+    @media (max-width: 992px) {
+      .desktop-nav {
+        gap: 14px;
+      }
+      .nav-link {
+        font-size: 0.84rem;
+      }
+      .kpi-row {
+        grid-template-columns: repeat(3, 1fr);
+      }
+      .frentes-grid {
+        grid-template-columns: 1fr;
+      }
+      .latam-benefits-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .segmentos-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .diferenciais-strip {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .contact-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .header-fixed {
+        padding: 12px 0;
+        min-height: 76px;
+      }
+      .brand-logo-crop {
+        max-width: 170px;
+      }
+      .brand-logo-badge {
+        height: 48px;
+        padding: 4px 10px;
+      }
+      .brand-logo-img {
+        height: 36px;
+        max-width: 140px;
+      }
+      .brand-wrap {
+        gap: 12px;
+      }
+      .desktop-nav {
+        display: none;
+      }
+      .mobile-menu-toggle {
+        display: block;
+      }
+      .segmentos-grid {
+        grid-template-columns: 1fr;
+      }
+      .diferenciais-strip {
+        grid-template-columns: 1fr;
+      }
+      .kpi-row {
+        grid-template-columns: 1fr;
+      }
+      .about-box {
+        padding: 26px 20px;
+      }
+      .frente-highlight-card {
+        padding: 24px 20px;
+      }
+      .frente-highlight-header {
+        flex-direction: column;
+        gap: 14px;
+      }
+      .latam-benefits-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* PRINT STYLES */
+    @media print {
+      .header-fixed, .float-wa, .hero-actions, .contact-form-panel, .lang-switcher {
+        display: none !important;
+      }
+      body {
+        background: #ffffff !important;
+        color: #000000 !important;
+      }
+      .segmento-card, .frente-card, .about-box, .kpi-item {
+        border: 1px solid #ccc !important;
+        background: transparent !important;
+        color: #000 !important;
+      }
+      h1, h2, h3, h4, .brand-dgo, .kpi-number {
+        color: #000 !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- STICKY HEADER -->
+  <header class="header-fixed" id="navbar">
+    <div class="shell-container header-content">
+      <a href="#inicio" class="brand-wrap" aria-label="DGO Engenharia e Serviços - Início">
+        <div class="brand-logo-crop" id="brandLogoCrop">
+          <div class="brand-logo-badge">
+            <img src="https://adapta-one-prod.s3.sa-east-1.amazonaws.com/diego%40dgoservicos.com/png/logo_folha_png.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIA3FLD6RMYLYFE2L2Q%2F20261014%2Fsa-east-1%2Fs3%2Faws4_request&X-Amz-Date=20261014T021222Z&X-Amz-Expires=604800&X-Amz-Signature=dae31a1bddb6b0ef5857a3a12e74129a37a3141eda161f86ef1d8918485ed477&X-Amz-SignedHeaders=host&x-amz-checksum-mode=ENABLED&x-id=GetObject" alt="DGO Engenharia e Serviços" class="brand-logo-img" id="brandLogoImg" onerror="handleLogoError(this);">
+          </div>
+        </div>
+        <div class="brand-logo-fallback" id="brandLogoFallback" style="display: none;">
+          <div class="brand-dgo">DG<span>O</span></div>
+          <div class="brand-subtitle">ENGENHARIA E SERVIÇOS</div>
+        </div>
+        <div class="badge-years">
+          <span data-i18n="badge_years">10 ANOS</span>
+        </div>
+      </a>
+
+      <div style="display: flex; align-items: center; gap: 20px;">
+        <!-- Desktop Nav -->
+        <nav class="desktop-nav" aria-label="Navegação principal">
+          <a href="#inicio" class="nav-link" data-i18n="nav_inicio">Início</a>
+          <a href="#sobre" class="nav-link" data-i18n="nav_sobre">A DGO</a>
+          <a href="#frentes" class="nav-link" data-i18n="nav_frentes">Frentes</a>
+          <a href="#segmentos" class="nav-link" data-i18n="nav_segmentos">Segmentos</a>
+          <a href="#diferenciais" class="nav-link" data-i18n="nav_diferenciais">Diferenciais</a>
+          <a href="#clientes" class="nav-link" data-i18n="nav_clientes">Clientes</a>
+          <a href="#contato" class="nav-link" data-i18n="nav_contato">Contato</a>
+        </nav>
+
+        <!-- PT / EN / ES Switcher -->
+        <div class="lang-switcher" role="group" aria-label="Seleção de idioma">
+          <button type="button" class="lang-btn active" id="btn-lang-pt" onclick="setLanguage('pt')">PT</button>
+          <button type="button" class="lang-btn" id="btn-lang-en" onclick="setLanguage('en')">EN</button>
+          <button type="button" class="lang-btn" id="btn-lang-es" onclick="setLanguage('es')">ES</button>
+        </div>
+
+        <!-- Mobile Toggle Button -->
+        <button class="mobile-menu-toggle" id="menuToggle" aria-label="Abrir menu" aria-expanded="false">
+          <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Mobile Drawer -->
+    <div class="mobile-drawer" id="mobileDrawer">
+      <nav class="mobile-nav-list">
+        <a href="#inicio" class="nav-link" onclick="closeMobileNav()" data-i18n="nav_inicio">Início</a>
+        <a href="#sobre" class="nav-link" onclick="closeMobileNav()" data-i18n="nav_sobre">A DGO</a>
+        <a href="#frentes" class="nav-link" onclick="closeMobileNav()" data-i18n="nav_frentes">Frentes</a>
+        <a href="#segmentos" class="nav-link" onclick="closeMobileNav()" data-i18n="nav_segmentos">Segmentos</a>
+        <a href="#diferenciais" class="nav-link" onclick="closeMobileNav()" data-i18n="nav_diferenciais">Diferenciais</a>
+        <a href="#clientes" class="nav-link" onclick="closeMobileNav()" data-i18n="nav_clientes">Clientes</a>
+        <a href="#contato" class="nav-link" onclick="closeMobileNav()" data-i18n="nav_contato">Contato</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- 1. HERO SECTION -->
+  <section class="hero-section" id="inicio">
+    <div class="hero-bg-accent"></div>
+    <div class="hero-grid-lines"></div>
+
+    <div class="shell-container">
+      <div class="hero-inner reveal">
+        <div class="hero-badge-tag">
+          <span style="display:inline-block; width:8px; height:8px; background:var(--accent); border-radius:50%;"></span>
+          <span data-i18n="hero_tag">ENGENHARIA INDUSTRIAL & SUPRIMENTOS</span>
+        </div>
+
+        <h1 class="hero-title">
+          <span data-i18n="hero_title_part1">Soluções que conectam engenharia,</span> <br>
+          <span data-i18n="hero_title_part2">eficiência e resultados.</span>
+        </h1>
+
+        <p class="hero-subtitle" data-i18n="hero_subtitle">
+          Integramos engenharia, manufatura, manutenção e suprimentos B2B para maximizar a eficiência da sua operação.
+        </p>
+
+        <div class="hero-actions">
+          <a href="https://wa.me/5519981252943" target="_blank" rel="noopener noreferrer" class="btn-dgo btn-dgo-primary">
+            <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-5.805 1.528zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/>
+            </svg>
+            <span data-i18n="btn_whatsapp">Fale conosco no WhatsApp</span>
+          </a>
+          <a href="#segmentos" class="btn-dgo btn-dgo-outline">
+            <span data-i18n="btn_solutions">Conheça nossas soluções</span>
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+          </a>
+        </div>
+      </div>
+
+      <!-- ANIMATED KPI COUNTERS -->
+      <div class="kpi-row reveal" id="counterRow">
+        <div class="kpi-item">
+          <div class="kpi-number"><span class="counter" data-target="10">0</span>+</div>
+          <div class="kpi-label" data-i18n="kpi_1">Anos de experiência comprovada</div>
+        </div>
+        <div class="kpi-item">
+          <div class="kpi-number"><span class="counter" data-target="4">0</span></div>
+          <div class="kpi-label" data-i18n="kpi_2">Frentes de atuação integradas</div>
+        </div>
+        <div class="kpi-item">
+          <div class="kpi-number"><span class="counter" data-target="40">0</span>+</div>
+          <div class="kpi-label" data-i18n="kpi_3">Clientes de diversos segmentos</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. A DGO -->
+  <section class="section-pad" id="sobre" style="background: rgba(20, 23, 20, 0.4);">
+    <div class="shell-container">
+      <div class="section-header reveal">
+        <span class="section-eyebrow" data-i18n="about_eyebrow">QUEM SOMOS</span>
+        <h2 class="section-heading" data-i18n="about_heading">A DGO Engenharia e Serviços</h2>
+      </div>
+
+      <div class="about-box reveal">
+        <p data-i18n="about_text">
+          Há 10 anos no mercado, a DGO Engenharia e Serviços integra três frentes estratégicas para a indústria: engenharia, projetos e desenvolvimento de produtos (CAPEX); manufatura e manutenção (OPEX); e suprimentos B2B, com foco em eficiência operacional, otimização de custos e resultados.
+        </p>
+        <div class="about-tags">
+          <span class="about-tag" data-i18n="about_tag1">Engenharia Consultiva</span>
+          <span class="about-tag" data-i18n="about_tag2">Excelência Operacional</span>
+          <span class="about-tag" data-i18n="about_tag3">Vendor Consolidation</span>
+          <span class="about-tag" data-i18n="about_tag4">Foco em Disponibilidade e OEE</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. FRENTES DE ATUAÇÃO -->
+  <section class="section-pad" id="frentes">
+    <div class="shell-container">
+      <div class="section-header reveal">
+        <span class="section-eyebrow" data-i18n="frentes_eyebrow">FRENTES DE ATUAÇÃO</span>
+        <h2 class="section-heading" data-i18n="frentes_heading">4 Frentes de atuação integradas</h2>
+        <p class="section-description" data-i18n="frentes_desc">
+          Abordagem multidisciplinar para apoiar investimentos de capital, eficiência de rotina e sinergia de cadeia de fornecimento.
+        </p>
+      </div>
+
+      <div class="frentes-grid">
+        <!-- CARD CAPEX -->
+        <div class="frente-card reveal">
+          <div class="frente-icon-wrap">
+            <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <rect x="2" y="3" width="20" height="14" rx="2"></rect>
+              <line x1="8" y1="21" x2="16" y2="21"></line>
+              <line x1="12" y1="17" x2="12" y2="21"></line>
+            </svg>
+          </div>
+          <span class="frente-tag">CAPEX</span>
+          <h3 class="frente-title" data-i18n="frente1_title">Engenharia de Produtos e Projetos</h3>
+          <p class="frente-desc" data-i18n="frente1_desc">
+            Suporte especializado para sua engenharia em projetos complexos, desenvolvimento técnico e novos maquinários.
+          </p>
+        </div>
+
+        <!-- CARD OPEX -->
+        <div class="frente-card reveal">
+          <div class="frente-icon-wrap">
+            <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="3"></circle>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+            </svg>
+          </div>
+          <span class="frente-tag">OPEX</span>
+          <h3 class="frente-title" data-i18n="frente2_title">Manufatura, Processos e Manutenção</h3>
+          <p class="frente-desc" data-i18n="frente2_desc">
+            Aumento de OEE e redução de downtime na sua fábrica através de rotinas inteligentes, engenharia de confiabilidade e planos de ação.
+          </p>
+        </div>
+
+        <!-- CARD B2B -->
+        <div class="frente-card reveal">
+          <div class="frente-icon-wrap">
+            <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+              <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+              <line x1="12" y1="22.08" x2="12" y2="12"></line>
+            </svg>
+          </div>
+          <span class="frente-tag">B2B</span>
+          <h3 class="frente-title" data-i18n="frente3_title">Soluções e Vendor Consolidation</h3>
+          <p class="frente-desc" data-i18n="frente3_desc">
+            Foque no seu core business. Nós gerenciamos o resto com consolidação de compras industriais, tail spend e agilidade no suprimento.
+          </p>
+        </div>
+      </div>
+
+      <!-- NOVO CARD / BLOCO DE DESTAQUE: EMPRESAS NO EXTERIOR (LATAM & GLOBAL) -->
+      <div class="frente-highlight-card reveal">
+        <div class="frente-highlight-header">
+          <div class="frente-icon-wrap" style="margin-bottom: 0;">
+            <svg width="30" height="30" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="2" y1="12" x2="22" y2="12"></line>
+              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+            </svg>
+          </div>
+          <div class="frente-highlight-content">
+            <span class="frente-tag" data-i18n="latam_tag">LATAM &amp; SUPORTE INTERNACIONAL</span>
+            <h3 class="frente-title" style="font-size: 1.45rem; margin-top: 4px;" data-i18n="latam_title">ENGENHARIA BRASILEIRA, ONDE SUA EMPRESA ESTIVER</h3>
+            <p class="frente-highlight-subtitle" data-i18n="latam_subtitle">Sua operação cruzou fronteiras. Sua necessidade de engenharia continua.</p>
+            <p class="frente-desc" data-i18n="latam_desc">
+              Expandir para outros mercados traz novos desafios para a engenharia, a manufatura e a gestão de fornecedores. A DGO Engenharia e Serviços conecta conhecimento técnico, desenvolvimento de projetos, manufatura, manutenção e suprimentos B2B para apoiar operações industriais além das fronteiras brasileiras. Engenharia integrada, soluções sob medida e a capacidade técnica brasileira a serviço da sua operação, onde quer que ela esteja.
+            </p>
+          </div>
+        </div>
+
+        <div class="latam-benefits-grid">
+          <div class="latam-benefit-item">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            <span data-i18n="latam_item1">Projetos e engenharia remota</span>
+          </div>
+          <div class="latam-benefit-item">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            <span data-i18n="latam_item2">Nacionalização de peças e suprimentos</span>
+          </div>
+          <div class="latam-benefit-item">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            <span data-i18n="latam_item3">Manutenção e retrofit</span>
+          </div>
+          <div class="latam-benefit-item">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            <span data-i18n="latam_item4">Gestão técnica unificada</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. SEGMENTOS -->
+  <section class="section-pad" id="segmentos" style="background: rgba(16, 20, 16, 0.45);">
+    <div class="shell-container">
+      <div class="section-header reveal">
+        <span class="section-eyebrow" data-i18n="seg_eyebrow">ESPECIALIDADES</span>
+        <h2 class="section-heading" data-i18n="seg_heading">40+ CLIENTES DE DIVERSOS SEGMENTOS</h2>
+        <p class="section-description" data-i18n="seg_desc">
+          Portfólio técnico estruturado para atender demandas operacionais de alta complexidade industrial e educacional.
+        </p>
+      </div>
+
+      <div class="segmentos-grid">
+        <!-- 1. ENGENHARIA E PROJETOS -->
+        <div class="segmento-card reveal">
+          <div class="segmento-img-wrap">
+            <img src="https://generated-images.adapta.one/diego%40dgoservicos.com/01a118f1-6cd0-7619-a815-98d62418b5ac/2026-10-14T01-06-20-469Z_Original_user_intent_Dark_moody_photograph_of_an.png" alt="Engenharia e Projetos — CAD 3D modeling" class="segmento-img" loading="lazy">
+          </div>
+          <div class="segmento-body">
+            <div class="segmento-header">
+              <div class="segmento-icon">
+                <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
+                </svg>
+              </div>
+              <h3 class="segmento-title" data-i18n="card1_title">Engenharia e Projetos</h3>
+            </div>
+            <ul class="segmento-list">
+              <li data-i18n="card1_i1">Desenvolvimento de máquinas, equipamentos e dispositivos</li>
+              <li data-i18n="card1_i2">Projetos CAD/CAM e modelamento tridimensional</li>
+              <li data-i18n="card1_i3">Detalhamentos 2D executivos</li>
+              <li data-i18n="card1_i4">Engenharia reversa</li>
+              <li data-i18n="card1_i5">Processos de manufatura</li>
+              <li data-i18n="card1_i6">Usinagem de precisão</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- 2. MANUTENÇÃO INDUSTRIAL -->
+        <div class="segmento-card reveal">
+          <div class="segmento-img-wrap">
+            <img src="https://generated-images.adapta.one/diego%40dgoservicos.com/01a118f1-6cd0-7619-a815-98d62418b5ac/2026-10-14T01-06-20-026Z_Original_user_intent_Dark_moody_photograph_of_an.png" alt="Manutenção Industrial" class="segmento-img" loading="lazy">
+          </div>
+          <div class="segmento-body">
+            <div class="segmento-header">
+              <div class="segmento-icon">
+                <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path>
+                  <line x1="12" y1="2" x2="12" y2="12"></line>
+                </svg>
+              </div>
+              <h3 class="segmento-title" data-i18n="card2_title">Manutenção Industrial</h3>
+            </div>
+            <ul class="segmento-list">
+              <li data-i18n="card2_i1">Manutenção de máquinas e equipamentos produtivos</li>
+              <li data-i18n="card2_i2">Manutenção predial industrial</li>
+              <li data-i18n="card2_i3">Sistemas hidráulicos e pneumáticos</li>
+              <li data-i18n="card2_i4">Instalações e manutenção elétrica industrial</li>
+              <li data-i18n="card2_i5">Manutenção civil e adequações estruturais</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- 3. SOLUÇÕES ACADÊMICAS -->
+        <div class="segmento-card reveal">
+          <div class="segmento-img-wrap">
+            <img src="https://generated-images.adapta.one/diego%40dgoservicos.com/01a118f1-6cd0-7619-a815-98d62418b5ac/2026-10-14T01-06-22-454Z_Original_user_intent_Dark_moody_photograph_of_a_d.png" alt="Soluções Acadêmicas — Bancadas Didáticas" class="segmento-img" loading="lazy">
+          </div>
+          <div class="segmento-body">
+            <div class="segmento-header">
+              <div class="segmento-icon">
+                <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
+                  <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
+                </svg>
+              </div>
+              <h3 class="segmento-title" data-i18n="card3_title">Soluções Acadêmicas</h3>
+            </div>
+            <ul class="segmento-list">
+              <li data-i18n="card3_i1">Bancadas e infraestrutura didática para ensino técnico</li>
+              <li data-i18n="card3_i2">Kits acadêmicos plug &amp; play com roteiros práticos</li>
+              <li data-i18n="card3_i3">Integração: automação, metrologia e instrumentação</li>
+              <li data-i18n="card3_i4">Manufatura didática para laboratórios</li>
+              <li data-i18n="card3_i5">Customização para colégios técnicos e universidades</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- 4. CONSULTORIA EMPRESARIAL -->
+        <div class="segmento-card reveal">
+          <div class="segmento-img-wrap">
+            <img src="https://generated-images.adapta.one/diego%40dgoservicos.com/01a118f1-6cd0-7619-a815-98d62418b5ac/2026-10-14T01-12-42-974Z_Original_user_intent_Dark_moody_photograph_of_a_b.png" alt="Consultoria Empresarial — Gemba walk e chão de fábrica" class="segmento-img" loading="lazy">
+          </div>
+          <div class="segmento-body">
+            <div class="segmento-header">
+              <div class="segmento-icon">
+                <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <line x1="18" y1="20" x2="18" y2="10"></line>
+                  <line x1="12" y1="20" x2="12" y2="4"></line>
+                  <line x1="6" y1="20" x2="6" y2="14"></line>
+                </svg>
+              </div>
+              <h3 class="segmento-title" data-i18n="card4_title">Consultoria Empresarial</h3>
+            </div>
+            <ul class="segmento-list">
+              <li data-i18n="card4_i1">Otimização e melhoria contínua de processos</li>
+              <li data-i18n="card4_i2">Gestão de mudança e resultados sustentáveis</li>
+              <li data-i18n="card4_i3">Excelência operacional e governança técnica</li>
+              <li data-i18n="card4_i4">Lean Manufacturing e mentalidade ágil no chão de fábrica</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- 5. SUPRIMENTOS B2B -->
+        <div class="segmento-card reveal">
+          <div class="segmento-img-wrap">
+            <img src="https://generated-images.adapta.one/diego%40dgoservicos.com/01a118f1-6cd0-7619-a815-98d62418b5ac/2026-10-14T01-06-22-111Z_Original_user_intent_Dark_moody_photograph_of_an.png" alt="Suprimentos B2B e Vendor Consolidation" class="segmento-img" loading="lazy">
+          </div>
+          <div class="segmento-body">
+            <div class="segmento-header">
+              <div class="segmento-icon">
+                <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <circle cx="9" cy="21" r="1"></circle>
+                  <circle cx="20" cy="21" r="1"></circle>
+                  <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+                </svg>
+              </div>
+              <h3 class="segmento-title" data-i18n="card5_title">Suprimentos B2B</h3>
+            </div>
+            <ul class="segmento-list">
+              <li data-i18n="card5_i1">Gestão de tail spend (MRO)</li>
+              <li data-i18n="card5_i2">Compras spot e consolidação de fornecedores (Vendor Consolidation)</li>
+              <li data-i18n="card5_i3">Ponto único de contato (SPOC) para compras técnicas</li>
+              <li data-i18n="card5_i4">Integração direta com operação e engenharia</li>
+              <li data-i18n="card5_i5">Redução de custo transacional, TCO e lead time</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- 6. TREINAMENTOS -->
+        <div class="segmento-card reveal">
+          <div class="segmento-img-wrap">
+            <img src="https://generated-images.adapta.one/diego%40dgoservicos.com/01a118f1-6cd0-7619-a815-98d62418b5ac/2026-10-14T01-12-43-975Z_Original_user_intent_Dark_moody_photograph_of_an.png" alt="Treinamentos — Treinamento técnico industrial" class="segmento-img" loading="lazy">
+          </div>
+          <div class="segmento-body">
+            <div class="segmento-header">
+              <div class="segmento-icon">
+                <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="9" cy="7" r="4"></circle>
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                </svg>
+              </div>
+              <h3 class="segmento-title" data-i18n="card6_title">Treinamentos</h3>
+            </div>
+            <ul class="segmento-list">
+              <li data-i18n="card6_i1">Treinamentos corporativos técnicos sob demanda</li>
+              <li data-i18n="card6_i2">Capacitação em manutenção e processos fabris</li>
+              <li data-i18n="card6_i3">Workshops de boas práticas de manufatura</li>
+              <li data-i18n="card6_i4">Cursos gratuitos abertos à comunidade industrial</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5. DIFERENCIAIS -->
+  <section class="section-pad" id="diferenciais">
+    <div class="shell-container">
+      <div class="section-header reveal">
+        <span class="section-eyebrow" data-i18n="dif_eyebrow">VANTAGEM COMPETITIVA</span>
+        <h2 class="section-heading" data-i18n="dif_heading">Por que escolher a DGO?</h2>
+      </div>
+
+      <div class="diferenciais-strip reveal">
+        <div class="dif-item">
+          <div class="dif-icon-circle">
+            <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+          </div>
+          <h4 class="dif-title" data-i18n="dif1_title">Ponto Único de Contato (SPOC)</h4>
+          <p class="dif-sub" data-i18n="dif1_sub">Centralize demandas de engenharia e suprimentos com um só parceiro ágil e confiável.</p>
+        </div>
+
+        <div class="dif-item">
+          <div class="dif-icon-circle">
+            <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+              <polyline points="2 17 12 22 22 17"></polyline>
+              <polyline points="2 12 12 17 22 12"></polyline>
+            </svg>
+          </div>
+          <h4 class="dif-title" data-i18n="dif2_title">Integração Suprimentos &amp; Engenharia</h4>
+          <p class="dif-sub" data-i18n="dif2_sub">Conhecimento técnico que elimina retrabalhos e especificações incorretas em compras.</p>
+        </div>
+
+        <div class="dif-item">
+          <div class="dif-icon-circle">
+            <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+            </svg>
+          </div>
+          <h4 class="dif-title" data-i18n="dif3_title">Formação Aplicada à Realidade</h4>
+          <p class="dif-sub" data-i18n="dif3_sub">Soluções e treinamentos focados em desafios reais do ecossistema fabril contemporâneo.</p>
+        </div>
+
+        <div class="dif-item">
+          <div class="dif-icon-circle">
+            <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+            </svg>
+          </div>
+          <h4 class="dif-title" data-i18n="dif4_title">Atuação no Chão de Fábrica (Gemba)</h4>
+          <p class="dif-sub" data-i18n="dif4_sub">Engenharia presente onde as coisas realmente acontecem, gerando impacto prático imediato.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5.1 NOSSOS CLIENTES -->
+  <section class="section-pad clients-section" id="clientes">
+    <div class="shell-container">
+      <div class="section-header reveal">
+        <span class="section-eyebrow" data-i18n="clientes_eyebrow">PARCERIAS &amp; CONFIANÇA</span>
+        <h2 class="section-heading" data-i18n="clientes_heading">NOSSOS <span style="color: var(--accent);">CLIENTES</span></h2>
+        <p class="section-description" data-i18n="clientes_sub">Empresas que confiam no nosso trabalho</p>
+      </div>
+    </div>
+
+    <!-- CARROSSEL / MARQUEE DE CLIENTES -->
+    <div class="marquee-container reveal">
+      <!-- FILEIRA 1 (ESQUERDA - 13 CLIENTES) -->
+      <div class="marquee-row marquee-left" aria-label="Clientes parceiros - fileira 1">
+        <div class="marquee-track">
+          <!-- 13 CLIENTES ORIGINAIS -->
+          <div class="client-card">
+            <span class="client-brand-text">A&amp;Z</span>
+          </div>
+          <div class="client-card">
+            <span class="client-brand-text">AGUIAFIX</span>
+          </div>
+          <div class="client-card">
+            <span class="client-brand-text">ARCO EDUCAÇÃO</span>
+          </div>
+          <div class="client-card">
+            <span class="client-brand-text">CONDUSCAB</span>
+          </div>
+          <div class="client-card">
+            <span class="client-brand-text">EMS</span>
+          </div>
+          <div class="client-card">
+            <span class="client-brand-text">ESAMC</span>
+          </div>
+          <div class="client-card">
+            <span class="client-brand-text">GIULIO SIMEONE DESIGN</span>
+          </div>
+          <div class="client-card">
+            <span class="client-brand-text">HUB DE CONHECIMENTO</span>
+          </div>
+          <div class="client-card">
+            <span class="client-brand-text">INSTITUTO ELDORADO</span>
+          </div>
+          <div class="client-card">
+            <span class="client-brand-text">JVTECH</span>
+          </div>
+          <div class="client-card">
+            <span class="client-brand-text">LANMAR</span>
+          </div>
+          <div class="client-card">
+            <span class="client-brand-text">LEVERAGE</span>
+          </div>
+          <div class="client-card">
+            <span class="client-brand-text">LIMA&amp;BONFÁ</span>
+          </div>
+
+          <!-- DUPLICATA PARA LOOP PERFEITO -->
+          <div class="client-card" aria-hidden="true">
+            <span class="client-brand-text">A&amp;Z</span>
+          </div>
+          <div class="client-card" aria-hidden="true">
+            <span class="client-brand-text">AGUIAFIX</span>
+          </div>
+          <div class="client-card" aria-hidden="true">
+            <span class="client-brand-text">ARCO EDUCAÇÃO</span>
+          </div>
+          <div class="client-card" aria-hidden="true">
+            <span class="client-brand-text">CONDUSCAB</span>
+          </div>
+          <div class="client-card" aria-hidden="true">
+            <span class="client-brand-text">EMS</span>
+          </div>
+          <div class="client-card" aria-hidden="true">
+            <span class="client-brand-text">ESAMC</span>
+          </div>
+          <div class="client-card" aria-hidden="true">
+            <span class="client-brand-text">GIULIO SIMEONE DESIGN</span>
+          </div>
+          <div class="client-card" aria-hidden="true">
+            <span class="client-brand-text">HUB DE CONHECIMENTO</span>
+          </div>
+          <div class="client-card" aria-hidden="true">
+            <span class="client-brand-text">INSTITUTO ELDORADO</span>
+          </div>
+          <div class="client-card" aria-hidden="true">
+            <span class="client-brand-text">JVTECH</span>
+          </div>
+          <div class="client-card" aria-hidden="true">
+            <span class="client-brand-text">LANMAR</span>
+          </div>
+          <div class="client-card" aria-hidden="true">
+            <span class="client-brand-text">LEVERAGE</span>
+          </div>
+          <div class="client-card" aria-hidden="true">
+            <span class="client-brand-text">LIMA&amp;BONFÁ</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- FILEIRA 2 (DIREITA - 13 CLIENTES) -->
+      <div class="marquee-row marquee-right" aria-label="Clientes parceiros - fileira 2">
+        <div class="marquee-track">
+          <!-- 13 CLIENTES ORIGINAIS -->
+          <div class="client-card">
+            <span class="client-brand-text">LOYMARK</span>
+          </div>
+          <div class="client-card">
+            <span class="client-brand-text">MARELLI</span>
+          </div>
+          <div class="client-card">
+            <span class="client-brand-text">MRV</span>
+          </div>
+          <div class="client-card">
+            <span class="client-brand-text">NATURA</span>
+          </div>
+          <div class="client-card">
+            <span class="client-brand-text">RAÍZEN</span>
+          </div>
+          <div class="client-card">
+            <span class="client-brand-text">RelSystem</span>
+          </div>
+          <div class="client-card">
+            <span class="client-brand-text">RXCT</span>
+          </div>
+          <div class="client-card">
+            <span class="client-brand-text">SELINC</span>
+          </div>
+          <div class="client-card">
+            <span class="client-brand-text">SENAI</span>
+          </div>
+          <div class="client-card">
+            <span class="client-brand-text">SHARK PRO</span>
+          </div>
+          <div class="client-card">
+            <span class="client-brand-text">UNICAMP</span>
+          </div>
+          <div class="client-card">
+            <span class="client-brand-text">VALEO</span>
+          </div>
+          <div class="client-card">
+            <span class="client-brand-text">YARA BRASIL</span>
+          </div>
+
+          <!-- DUPLICATA PARA LOOP PERFEITO -->
+          <div class="client-card" aria-hidden="true">
+            <span class="client-brand-text">LOYMARK</span>
+          </div>
+          <div class="client-card" aria-hidden="true">
+            <span class="client-brand-text">MARELLI</span>
+          </div>
+          <div class="client-card" aria-hidden="true">
+            <span class="client-brand-text">MRV</span>
+          </div>
+          <div class="client-card" aria-hidden="true">
+            <span class="client-brand-text">NATURA</span>
+          </div>
+          <div class="client-card" aria-hidden="true">
+            <span class="client-brand-text">RAÍZEN</span>
+          </div>
+          <div class="client-card" aria-hidden="true">
+            <span class="client-brand-text">RelSystem</span>
+          </div>
+          <div class="client-card" aria-hidden="true">
+            <span class="client-brand-text">RXCT</span>
+          </div>
+          <div class="client-card" aria-hidden="true">
+            <span class="client-brand-text">SELINC</span>
+          </div>
+          <div class="client-card" aria-hidden="true">
+            <span class="client-brand-text">SENAI</span>
+          </div>
+          <div class="client-card" aria-hidden="true">
+            <span class="client-brand-text">SHARK PRO</span>
+          </div>
+          <div class="client-card" aria-hidden="true">
+            <span class="client-brand-text">UNICAMP</span>
+          </div>
+          <div class="client-card" aria-hidden="true">
+            <span class="client-brand-text">VALEO</span>
+          </div>
+          <div class="client-card" aria-hidden="true">
+            <span class="client-brand-text">YARA BRASIL</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6. CONTATO -->
+  <section class="section-pad" id="contato" style="background: rgba(16, 20, 16, 0.5);">
+    <div class="shell-container">
+      <div class="section-header reveal">
+        <span class="section-eyebrow" data-i18n="contato_eyebrow">FALE COM NOSSOS ENGENHEIROS</span>
+        <h2 class="section-heading" data-i18n="contato_heading">Vamos conversar sobre sua operação?</h2>
+        <p class="section-description" data-i18n="contato_desc">
+          Tire dúvidas, solicite orçamentos técnicos ou agende uma visita de diagnóstico com nossa equipe.
+        </p>
+      </div>
+
+      <div class="contact-grid">
+        <!-- CANAIS DIRETOS -->
+        <div class="contact-info-panel reveal">
+          <h3 style="font-size: 1.4rem; font-weight: 800; margin-bottom: 8px;" data-i18n="contact_direct_title">Canais Diretos</h3>
+          <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 24px;" data-i18n="contact_direct_sub">
+            Estamos prontos para atender com rapidez e precisão técnica.
+          </p>
+
+          <!-- WHATSAPP PRINCIPAL -->
+          <a href="https://wa.me/5519981252943" target="_blank" rel="noopener noreferrer" class="btn-dgo btn-dgo-primary" style="width: 100%; margin-bottom: 22px; justify-content: center;">
+            <svg width="22" height="22" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-5.805 1.528zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/>
+            </svg>
+            <span>WhatsApp: +55 (19) 98125-2943</span>
+          </a>
+
+          <div class="contact-channels">
+            <a href="mailto:contato@dgoservicos.com" class="contact-channel-item">
+              <div class="contact-channel-icon">
+                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                  <polyline points="22,6 12,13 2,6"></polyline>
+                </svg>
+              </div>
+              <div>
+                <div style="font-size: 0.76rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700;">E-mail</div>
+                <div style="font-weight: 600;">contato@dgoservicos.com</div>
+              </div>
+            </a>
+
+            <a href="https://www.dgoservicos.com" target="_blank" class="contact-channel-item">
+              <div class="contact-channel-icon">
+                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="2" y1="12" x2="22" y2="12"></line>
+                  <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                </svg>
+              </div>
+              <div>
+                <div style="font-size: 0.76rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700;" data-i18n="lbl_website">Portal Oficial</div>
+                <div style="font-weight: 600;">www.dgoservicos.com</div>
+              </div>
+            </a>
+          </div>
+        </div>
+
+        <!-- FORMULÁRIO ENCAMINHA PARA WHATSAPP -->
+        <div class="contact-form-panel reveal">
+          <h3 style="font-size: 1.4rem; font-weight: 800; margin-bottom: 8px;" data-i18n="form_title">Envie uma mensagem rápida</h3>
+          <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 24px;" data-i18n="form_sub">
+            Preencha os campos abaixo para iniciar conversa com nosso time técnico:
+          </p>
+
+          <form id="contactForm" onsubmit="handleFormSubmit(event)">
+            <div class="form-group">
+              <label class="form-label" for="userName" data-i18n="lbl_name">Seu Nome *</label>
+              <input type="text" id="userName" class="form-input" required placeholder="Ex: Roberto Lima">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="userCompany" data-i18n="lbl_company">Empresa / Setor *</label>
+              <input type="text" id="userCompany" class="form-input" required placeholder="Ex: Indústria Metalúrgica ABC">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="userMessage" data-i18n="lbl_message">Como podemos ajudar? *</label>
+              <textarea id="userMessage" class="form-textarea" required placeholder="Descreva brevemente o projeto, manutenção ou necessidade de suprimentos..."></textarea>
+            </div>
+
+            <button type="submit" class="btn-dgo btn-dgo-primary" style="width: 100%;">
+              <span data-i18n="btn_send_form">Enviar mensagem via WhatsApp</span>
+              <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <line x1="22" y1="2" x2="11" y2="13"></line>
+                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+              </svg>
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7. RODAPÉ -->
+  <footer class="site-footer">
+    <div class="shell-container">
+      <div class="footer-top">
+        <div style="max-width: 360px;">
+          <!-- Marca DGO no Rodapé -->
+          <div class="footer-logo-badge">
+            <img src="https://adapta-one-prod.s3.sa-east-1.amazonaws.com/diego%40dgoservicos.com/png/logo_folha_png.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIA3FLD6RMYLYFE2L2Q%2F20261014%2Fsa-east-1%2Fs3%2Faws4_request&X-Amz-Date=20261014T021222Z&X-Amz-Expires=604800&X-Amz-Signature=dae31a1bddb6b0ef5857a3a12e74129a37a3141eda161f86ef1d8918485ed477&X-Amz-SignedHeaders=host&x-amz-checksum-mode=ENABLED&x-id=GetObject" alt="DGO Engenharia e Serviços" class="footer-logo-img" id="footerLogoImg" onerror="this.parentElement.style.display='none';">
+          </div>
+          <p style="color: #a4b0a4; font-size: 0.9rem; line-height: 1.5; margin: 0;" data-i18n="footer_desc">
+            Sustentando a operação de indústrias exigentes com engenharia de precisão, processos ágeis e suprimentos consolidados.
+          </p>
+        </div>
+
+        <div>
+          <h5 style="color: #ffffff; font-size: 0.95rem; font-weight: 700; margin-bottom: 12px;" data-i18n="footer_nav_title">Navegação Rápida</h5>
+          <div style="display: flex; flex-direction: column; gap: 8px; font-size: 0.88rem;">
+            <a href="#inicio" style="color: var(--text-muted); text-decoration: none;" data-i18n="nav_inicio">Início</a>
+            <a href="#sobre" style="color: var(--text-muted); text-decoration: none;" data-i18n="nav_sobre">A DGO</a>
+            <a href="#frentes" style="color: var(--text-muted); text-decoration: none;" data-i18n="nav_frentes">Frentes</a>
+            <a href="#segmentos" style="color: var(--text-muted); text-decoration: none;" data-i18n="nav_segmentos">Segmentos</a>
+            <a href="#diferenciais" style="color: var(--text-muted); text-decoration: none;" data-i18n="nav_diferenciais">Diferenciais</a>
+            <a href="#clientes" style="color: var(--text-muted); text-decoration: none;" data-i18n="nav_clientes">Clientes</a>
+            <a href="#contato" style="color: var(--text-muted); text-decoration: none;" data-i18n="nav_contato">Contato</a>
+          </div>
+        </div>
+
+        <div>
+          <h5 style="color: #ffffff; font-size: 0.95rem; font-weight: 700; margin-bottom: 12px;" data-i18n="footer_contact_title">Contato &amp; Registro</h5>
+          <div style="display: flex; flex-direction: column; gap: 8px; font-size: 0.88rem; color: var(--text-muted);">
+            <div><strong>WhatsApp:</strong> <a href="https://wa.me/5519981252943" target="_blank" rel="noopener noreferrer" style="color: var(--text-muted); text-decoration: none;">+55 (19) 98125-2943</a></div>
+            <div><strong>E-mail:</strong> contato@dgoservicos.com</div>
+            <div><strong>CNPJ:</strong> 24.916.979/0001-00</div>
+            <div><strong>Web:</strong> dgoservicos.com</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer-legal">
+        <div>
+          &copy; 2026 DGO Engenharia e Serviços. <span data-i18n="footer_rights">Todos os direitos reservados.</span>
+        </div>
+        <div>
+          <span data-i18n="footer_domain">Domínio oficial: dgoservicos.com</span>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- BOTÃO FLUTUANTE DE WHATSAPP -->
+  <a href="https://wa.me/5519981252943" target="_blank" rel="noopener noreferrer" class="float-wa" aria-label="WhatsApp DGO">
+    <div class="float-wa-pulse"></div>
+    <svg width="32" height="32" fill="currentColor" viewBox="0 0 24 24">
+      <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-5.805 1.528zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/>
+    </svg>
+  </a>
+
+  <!-- SCRIPTS: I18N, COUNTERS, ANIMATIONS, FORM HANDLER -->
+  <script>
+    // DICIONÁRIO TRILÍNGUE (PT / EN / ES)
+    const translations = {
+      pt: {
+        badge_years: "10 ANOS",
+        nav_inicio: "Início",
+        nav_sobre: "A DGO",
+        nav_frentes: "Frentes",
+        nav_segmentos: "Segmentos",
+        nav_diferenciais: "Diferenciais",
+        nav_clientes: "Clientes",
+        nav_contato: "Contato",
+        hero_tag: "ENGENHARIA INDUSTRIAL & SUPRIMENTOS",
+        hero_title_part1: "Soluções que conectam engenharia,",
+        hero_title_part2: "eficiência e resultados.",
+        hero_subtitle: "Integramos engenharia, manufatura, manutenção e suprimentos B2B para maximizar a eficiência da sua operação.",
+        btn_whatsapp: "Fale conosco no WhatsApp",
+        btn_solutions: "Conheça nossas soluções",
+        kpi_1: "Anos de experiência comprovada",
+        kpi_2: "Frentes de atuação integradas",
+        kpi_3: "Clientes de diversos segmentos",
+        about_eyebrow: "QUEM SOMOS",
+        about_heading: "A DGO Engenharia e Serviços",
+        about_text: "Há 10 anos no mercado, a DGO Engenharia e Serviços integra três frentes estratégicas para a indústria: engenharia, projetos e desenvolvimento de produtos (CAPEX); manufatura e manutenção (OPEX); e suprimentos B2B, com foco em eficiência operacional, otimização de custos e resultados.",
+        about_tag1: "Engenharia Consultiva",
+        about_tag2: "Excelência Operacional",
+        about_tag3: "Vendor Consolidation",
+        about_tag4: "Foco em Disponibilidade e OEE",
+        frentes_eyebrow: "FRENTES DE ATUAÇÃO",
+        frentes_heading: "4 Frentes de atuação integradas",
+        frentes_desc: "Abordagem multidisciplinar para apoiar investimentos de capital, eficiência de rotina e sinergia de cadeia de fornecimento.",
+        frente1_title: "Engenharia de Produtos e Projetos",
+        frente1_desc: "Suporte especializado para sua engenharia em projetos complexos, desenvolvimento técnico e novos maquinários.",
+        frente2_title: "Manufatura, Processos e Manutenção",
+        frente2_desc: "Aumento de OEE e redução de downtime na sua fábrica através de rotinas inteligentes, engenharia de confiabilidade e planos de ação.",
+        frente3_title: "Soluções e Vendor Consolidation",
+        frente3_desc: "Foque no seu core business. Nós gerenciamos o resto com consolidação de compras industriais, tail spend e agilidade no suprimento.",
+        latam_tag: "LATAM &amp; SUPORTE INTERNACIONAL",
+        latam_title: "ENGENHARIA BRASILEIRA, ONDE SUA EMPRESA ESTIVER",
+        latam_subtitle: "Sua operação cruzou fronteiras. Sua necessidade de engenharia continua.",
+        latam_desc: "Expandir para outros mercados traz novos desafios para a engenharia, a manufatura e a gestão de fornecedores. A DGO Engenharia e Serviços conecta conhecimento técnico, desenvolvimento de projetos, manufatura, manutenção e suprimentos B2B para apoiar operações industriais além das fronteiras brasileiras. Engenharia integrada, soluções sob medida e a capacidade técnica brasileira a serviço da sua operação, onde quer que ela esteja.",
+        latam_item1: "Projetos e engenharia remota",
+        latam_item2: "Nacionalização de peças e suprimentos",
+        latam_item3: "Manutenção e retrofit",
+        latam_item4: "Gestão técnica unificada",
+        seg_eyebrow: "ESPECIALIDADES",
+        seg_heading: "40+ CLIENTES DE DIVERSOS SEGMENTOS",
+        seg_desc: "Portfólio técnico estruturado para atender demandas operacionais de alta complexidade industrial e educacional.",
+        card1_title: "Engenharia e Projetos",
+        card1_i1: "Desenvolvimento de máquinas, equipamentos e dispositivos",
+        card1_i2: "Projetos CAD/CAM e modelamento tridimensional",
+        card1_i3: "Detalhamentos 2D executivos",
+        card1_i4: "Engenharia reversa",
+        card1_i5: "Processos de manufatura",
+        card1_i6: "Usinagem de precisão",
+        card2_title: "Manutenção Industrial",
+        card2_i1: "Manutenção de máquinas e equipamentos produtivos",
+        card2_i2: "Manutenção predial industrial",
+        card2_i3: "Sistemas hidráulicos e pneumáticos",
+        card2_i4: "Instalações e manutenção elétrica industrial",
+        card2_i5: "Manutenção civil e adequações estruturais",
+        card3_title: "Soluções Acadêmicas",
+        card3_i1: "Bancadas e infraestrutura didática para ensino técnico",
+        card3_i2: "Kits acadêmicos plug & play com roteiros práticos",
+        card3_i3: "Integração: automação, metrologia e instrumentação",
+        card3_i4: "Manufatura didática para laboratórios",
+        card3_i5: "Customização para colégios técnicos e universidades",
+        card4_title: "Consultoria Empresarial",
+        card4_i1: "Otimização e melhoria contínua de processos",
+        card4_i2: "Gestão de mudança e resultados sustentáveis",
+        card4_i3: "Excelência operacional e governança técnica",
+        card4_i4: "Lean Manufacturing e mentalidade ágil no chão de fábrica",
+        card5_title: "Suprimentos B2B",
+        card5_i1: "Gestão de tail spend (MRO)",
+        card5_i2: "Compras spot e consolidação de fornecedores (Vendor Consolidation)",
+        card5_i3: "Ponto único de contato (SPOC) para compras técnicas",
+        card5_i4: "Integração direta com operação e engenharia",
+        card5_i5: "Redução de custo transacional, TCO e lead time",
+        card6_title: "Treinamentos",
+        card6_i1: "Treinamentos corporativos técnicos sob demanda",
+        card6_i2: "Capacitação em manutenção e processos fabris",
+        card6_i3: "Workshops de boas práticas de manufatura",
+        card6_i4: "Cursos gratuitos abertos à comunidade industrial",
+        dif_eyebrow: "VANTAGEM COMPETITIVA",
+        dif_heading: "Por que escolher a DGO?",
+        dif1_title: "Ponto Único de Contato (SPOC)",
+        dif1_sub: "Centralize demandas de engenharia e suprimentos com um só parceiro ágil e confiável.",
+        dif2_title: "Integração Suprimentos & Engenharia",
+        dif2_sub: "Conhecimento técnico que elimina retrabalhos e especificações incorretas em compras.",
+        dif3_title: "Formação Aplicada à Realidade",
+        dif3_sub: "Soluções e treinamentos focados em desafios reais do ecossistema fabril contemporâneo.",
+        dif4_title: "Atuação no Chão de Fábrica (Gemba)",
+        dif4_sub: "Engenharia presente onde as coisas realmente acontecem, gerando impacto prático imediato.",
+        clientes_eyebrow: "PARCERIAS & CONFIANÇA",
+        clientes_heading: "NOSSOS <span style='color:var(--accent);'>CLIENTES</span>",
+        clientes_sub: "Empresas que confiam no nosso trabalho",
+        contato_eyebrow: "FALE COM NOSSOS ENGENHEIROS",
+        contato_heading: "Vamos conversar sobre sua operação?",
+        contato_desc: "Tire dúvidas, solicite orçamentos técnicos ou agende uma visita de diagnóstico com nossa equipe.",
+        contact_direct_title: "Canais Diretos",
+        contact_direct_sub: "Estamos prontos para atender com rapidez e precisão técnica.",
+        lbl_website: "Portal Oficial",
+        form_title: "Envie uma mensagem rápida",
+        form_sub: "Preencha os campos abaixo para iniciar conversa com nosso time técnico:",
+        lbl_name: "Seu Nome *",
+        lbl_company: "Empresa / Setor *",
+        lbl_message: "Como podemos ajudar? *",
+        btn_send_form: "Enviar mensagem via WhatsApp",
+        footer_desc: "Sustentando a operação de indústrias exigentes com engenharia de precisão, processos ágeis e suprimentos consolidados.",
+        footer_nav_title: "Navegação Rápida",
+        footer_contact_title: "Contato & Registro",
+        footer_rights: "Todos os direitos reservados.",
+        footer_domain: "Domínio oficial: dgoservicos.com"
+      },
+      en: {
+        badge_years: "10 YEARS",
+        nav_inicio: "Home",
+        nav_sobre: "About DGO",
+        nav_frentes: "Fronts",
+        nav_segmentos: "Sectors",
+        nav_diferenciais: "Differentiators",
+        nav_clientes: "Clients",
+        nav_contato: "Contact",
+        hero_tag: "INDUSTRIAL ENGINEERING & SUPPLIES",
+        hero_title_part1: "Solutions connecting engineering,",
+        hero_title_part2: "efficiency and results.",
+        hero_subtitle: "We integrate engineering, manufacturing, maintenance, and B2B supplies to maximize your operation's efficiency.",
+        btn_whatsapp: "Talk to us on WhatsApp",
+        btn_solutions: "Explore our solutions",
+        kpi_1: "Years of proven market experience",
+        kpi_2: "4 Integrated operational fronts",
+        kpi_3: "40+ Clients across multiple industries",
+        about_eyebrow: "ABOUT US",
+        about_heading: "DGO Engineering & Services",
+        about_text: "For 10 years in the market, DGO Engineering and Services integrates three strategic fronts for industry: engineering, projects and product development (CAPEX); manufacturing and maintenance (OPEX); and B2B supplies, focusing on operational efficiency, cost optimization, and results.",
+        about_tag1: "Consultative Engineering",
+        about_tag2: "Operational Excellence",
+        about_tag3: "Vendor Consolidation",
+        about_tag4: "Focus on Uptime and OEE",
+        frentes_eyebrow: "AREAS OF OPERATION",
+        frentes_heading: "4 Integrated Operational Fronts",
+        frentes_desc: "Multidisciplinary approach to support capital expenditure, routine plant efficiency, and supply chain synergy.",
+        frente1_title: "Product & Project Engineering",
+        frente1_desc: "Specialized engineering support for complex projects, technical machine development, and custom tooling.",
+        frente2_title: "Manufacturing, Processes & Maintenance",
+        frente2_desc: "Increased OEE and downtime reduction across your facility through reliability engineering and smart routines.",
+        frente3_title: "B2B Solutions & Vendor Consolidation",
+        frente3_desc: "Focus on your core business. We manage the rest with industrial procurement consolidation, tail spend, and agility.",
+        latam_tag: "LATAM &amp; GLOBAL SUPPORT",
+        latam_title: "BRAZILIAN ENGINEERING, WHEREVER YOUR COMPANY IS",
+        latam_subtitle: "Your operation crossed borders. Your engineering needs continue.",
+        latam_desc: "Expanding into other markets brings new challenges for engineering, manufacturing, and supplier management. DGO Engineering and Services connects technical expertise, project development, manufacturing, maintenance, and B2B supplies to support industrial operations beyond Brazilian borders. Integrated engineering, tailored solutions, and Brazilian technical excellence at the service of your operation, wherever it is.",
+        latam_item1: "Remote projects & engineering",
+        latam_item2: "Parts sourcing & supply chain localization",
+        latam_item3: "Maintenance & retrofit",
+        latam_item4: "Unified technical management",
+        seg_eyebrow: "SPECIALTIES",
+        seg_heading: "40+ CLIENTS ACROSS MULTIPLE INDUSTRIES",
+        seg_desc: "Structured technical portfolio engineered for demanding industrial, technical, and educational challenges.",
+        card1_title: "Engineering & Projects",
+        card1_i1: "Development of custom machines, equipment & fixtures",
+        card1_i2: "CAD/CAM engineering & 3D modeling",
+        card1_i3: "2D executive manufacturing drawings",
+        card1_i4: "Reverse engineering",
+        card1_i5: "Manufacturing processes optimization",
+        card1_i6: "Precision machining",
+        card2_title: "Industrial Maintenance",
+        card2_i1: "Production machinery & equipment maintenance",
+        card2_i2: "Industrial facilities maintenance",
+        card2_i3: "Hydraulic & pneumatic power systems",
+        card2_i4: "Industrial electrical installations & maintenance",
+        card2_i5: "Civil maintenance & structural adjustments",
+        card3_title: "Academic & Didactic Solutions",
+        card3_i1: "Didactic test benches & technical school infrastructure",
+        card3_i2: "Plug & play educational kits with practical courseware",
+        card3_i3: "Integration: automation, metrology & instrumentation",
+        card3_i4: "Didactic manufacturing setups for labs",
+        card3_i5: "Custom solutions for technical schools and universities",
+        card4_title: "Business Consulting",
+        card4_i1: "Process optimization & continuous improvement",
+        card4_i2: "Change management & sustainable outcomes",
+        card4_i3: "Operational excellence & technical governance",
+        card4_i4: "Lean Manufacturing & agile shop floor mindset",
+        card5_title: "B2B Supplies & Procurement",
+        card5_i1: "Tail spend management (MRO)",
+        card5_i2: "Spot buying & Vendor Consolidation",
+        card5_i3: "Single Point of Contact (SPOC) for technical purchases",
+        card5_i4: "Direct integration with operations and engineering",
+        card5_i5: "Reduction in transactional costs, TCO, and lead time",
+        card6_title: "Training Programs",
+        card6_i1: "Customized on-demand corporate technical training",
+        card6_i2: "Maintenance & plant operations capacity building",
+        card6_i3: "Manufacturing best practices workshops",
+        card6_i4: "Free open community courses for industrial technicians",
+        dif_eyebrow: "COMPETITIVE EDGE",
+        dif_heading: "Why Choose DGO?",
+        dif1_title: "Single Point of Contact (SPOC)",
+        dif1_sub: "Consolidate engineering and supplies demands under one fast, reliable, and accountable partner.",
+        dif2_title: "Supplies & Engineering Integration",
+        dif2_sub: "Engineering knowledge eliminating rework and incorrect specifications in purchases.",
+        dif3_title: "Applied Real-World Education",
+        dif3_sub: "Solutions and training designed specifically for modern shop-floor industrial realities.",
+        dif4_title: "Hands-on Shop Floor Presence (Gemba)",
+        dif4_sub: "Engineering on-site where value is created, generating immediate measurable impact.",
+        clientes_eyebrow: "PARTNERS & TRUST",
+        clientes_heading: "OUR <span style='color:var(--accent);'>CLIENTS</span>",
+        clientes_sub: "Companies that trust our work",
+        contato_eyebrow: "TALK TO OUR ENGINEERS",
+        contato_heading: "Let's talk about your operation?",
+        contato_desc: "Ask technical questions, request project quotes, or schedule a plant diagnostic visit with our team.",
+        contact_direct_title: "Direct Channels",
+        contact_direct_sub: "We are ready to assist with speed and technical precision.",
+        lbl_website: "Official Website",
+        form_title: "Send a Quick Message",
+        form_sub: "Fill in the details below to start a direct consultation with our technical team:",
+        lbl_name: "Your Name *",
+        lbl_company: "Company / Division *",
+        lbl_message: "How can we assist you? *",
+        btn_send_form: "Send Message via WhatsApp",
+        footer_desc: "Sustaining demanding industrial operations through precision engineering, agile processes, and consolidated supplies.",
+        footer_nav_title: "Quick Navigation",
+        footer_contact_title: "Contact & Records",
+        footer_rights: "All rights reserved.",
+        footer_domain: "Official domain: dgoservicos.com"
+      },
+      es: {
+        badge_years: "10 AÑOS",
+        nav_inicio: "Inicio",
+        nav_sobre: "La DGO",
+        nav_frentes: "Frentes",
+        nav_segmentos: "Sectores",
+        nav_diferenciais: "Diferenciales",
+        nav_clientes: "Clientes",
+        nav_contato: "Contacto",
+        hero_tag: "INGENIERÍA INDUSTRIAL & SUMINISTROS",
+        hero_title_part1: "Soluciones que conectan ingeniería,",
+        hero_title_part2: "eficiencia y resultados.",
+        hero_subtitle: "Integramos ingeniería, manufactura, mantenimiento y suministros B2B para maximizar la eficiencia de su operación.",
+        btn_whatsapp: "Hable con nosotros por WhatsApp",
+        btn_solutions: "Conozca nuestras soluciones",
+        kpi_1: "Años de experiencia comprobada",
+        kpi_2: "4 Frentes de actuación integradas",
+        kpi_3: "40+ Clientes de diversos segmentos",
+        about_eyebrow: "QUIÉNES SOMOS",
+        about_heading: "DGO Ingeniería y Servicios",
+        about_text: "Con 10 años en el mercado, DGO Ingeniería y Servicios integra tres frentes estratégicos para la industria: ingeniería, proyectos y desarrollo de productos (CAPEX); manufactura y mantenimiento (OPEX); y suministros B2B, con foco en eficiencia operacional, optimización de costos y resultados.",
+        about_tag1: "Ingeniería Consultiva",
+        about_tag2: "Excelencia Operacional",
+        about_tag3: "Vendor Consolidation",
+        about_tag4: "Enfoque en Disponibilidad y OEE",
+        frentes_eyebrow: "FRENTES DE ACTUACIÓN",
+        frentes_heading: "4 Frentes de actuación integradas",
+        frentes_desc: "Enfoque multidisciplinario para respaldar inversiones de capital, eficiencia de rutina y sinergia en la cadena de suministros.",
+        frente1_title: "Ingeniería de Productos y Proyectos",
+        frente1_desc: "Soporte especializado para su ingeniería en proyectos complejos, desarrollo técnico y nuevas maquinarias.",
+        frente2_title: "Manufactura, Procesos y Mantenimiento",
+        frente2_desc: "Aumento de OEE y reducción del tiempo de inactividad en su planta mediante rutinas inteligentes, ingeniería de confiabilidad y planes de acción.",
+        frente3_title: "Soluciones y Vendor Consolidation",
+        frente3_desc: "Enfóquese en su core business. Nosotros gestionamos el resto con consolidación de compras industriales, tail spend y agilidad en el suministro.",
+        latam_tag: "LATAM &amp; SOPORTE INTERNACIONAL",
+        latam_title: "INGENIERÍA BRASILEÑA, DONDE ESTÉ SU EMPRESA",
+        latam_subtitle: "Su operación cruzó fronteras. Su necesidad de ingeniería continúa.",
+        latam_desc: "Expandirse a otros mercados trae nuevos desafíos para la ingeniería, la manufactura y la gestión de proveedores. DGO Ingeniería y Servicios conecta conocimiento técnico, desarrollo de proyectos, manufactura, mantenimiento y suministros B2B para apoyar operaciones industriales más allá de las fronteras brasileñas. Ingeniería integrada, soluciones a medida y la capacidad técnica brasileña al servicio de su operación, dondequiera que esté.",
+        latam_item1: "Proyectos e ingeniería remota",
+        latam_item2: "Nacionalización de piezas y suministros",
+        latam_item3: "Mantenimiento y retrofit",
+        latam_item4: "Gestión técnica unificada",
+        seg_eyebrow: "ESPECIALIDADES",
+        seg_heading: "40+ CLIENTES DE DIVERSOS SEGMENTOS",
+        seg_desc: "Portafolio técnico estructurado para atender demandas operativas de alta complejidad industrial y académica.",
+        card1_title: "Ingeniería y Proyectos",
+        card1_i1: "Desarrollo de máquinas, equipos y dispositivos",
+        card1_i2: "Proyectos CAD/CAM y modelado tridimensional",
+        card1_i3: "Detallamientos 2D ejecutivos",
+        card1_i4: "Ingeniería inversa",
+        card1_i5: "Procesos de manufactura",
+        card1_i6: "Mecanizado de precisión",
+        card2_title: "Mantenimiento Industrial",
+        card2_i1: "Mantenimiento de máquinas y equipos productivos",
+        card2_i2: "Mantenimiento edilicio industrial",
+        card2_i3: "Sistemas hidráulicos y neumáticos",
+        card2_i4: "Instalaciones y mantenimiento eléctrico industrial",
+        card2_i5: "Mantenimiento civil y adecuaciones estructurales",
+        card3_title: "Soluciones Académicas",
+        card3_i1: "Bancos de prueba e infraestructura didáctica para formación técnica",
+        card3_i2: "Kits académicos plug & play con guías prácticas",
+        card3_i3: "Integración: automatización, metrología e instrumentación",
+        card3_i4: "Manufactura didáctica para laboratorios",
+        card3_i5: "Personalización para colegios técnicos y universidades",
+        card4_title: "Consultoría Empresarial",
+        card4_i1: "Optimización y mejora continua de procesos",
+        card4_i2: "Gestión del cambio y resultados sostenibles",
+        card4_i3: "Excelencia operacional y gobernanza técnica",
+        card4_i4: "Lean Manufacturing y mentalidad ágil en planta",
+        card5_title: "Suministros B2B",
+        card5_i1: "Gestión de tail spend (MRO)",
+        card5_i2: "Compras spot y consolidación de proveedores (Vendor Consolidation)",
+        card5_i3: "Punto único de contacto (SPOC) para compras técnicas",
+        card5_i4: "Integración directa con operaciones e ingeniería",
+        card5_i5: "Reducción de costos transaccionales, TCO y tiempos de entrega",
+        card6_title: "Capacitaciones",
+        card6_i1: "Capacitaciones corporativas técnicas bajo demanda",
+        card6_i2: "Capacitación en mantenimiento y procesos de planta",
+        card6_i3: "Talleres de buenas prácticas de manufactura",
+        card6_i4: "Cursos gratuitos abiertos a la comunidad industrial",
+        dif_eyebrow: "VENTAJA COMPETITIVA",
+        dif_heading: "¿Por qué elegir a DGO?",
+        dif1_title: "Punto Único de Contacto (SPOC)",
+        dif1_sub: "Centralice requerimientos de ingeniería y suministros con un socio ágil y confiable.",
+        dif2_title: "Integración Suministros & Ingeniería",
+        dif2_sub: "Conocimiento técnico que elimina retrabajos y especificaciones incorrectas en compras.",
+        dif3_title: "Formación Aplicada a la Realidad",
+        dif3_sub: "Soluciones y capacitaciones enfocadas en desafíos reales del entorno industrial contemporáneo.",
+        dif4_title: "Presencia en Planta (Gemba)",
+        dif4_sub: "Ingeniería presente donde suceden las cosas, generando impacto práctico e inmediato.",
+        clientes_eyebrow: "ALIANZAS & CONFIANZA",
+        clientes_heading: "NUESTROS <span style='color:var(--accent);'>CLIENTES</span>",
+        clientes_sub: "Empresas que confían en nuestro trabajo",
+        contato_eyebrow: "HABLE CON NUESTROS INGENIEROS",
+        contato_heading: "¿Conversamos sobre su operación?",
+        contato_desc: "Aclare dudas, solicite cotizaciones técnicas o coordine una visita de diagnóstico con nuestro equipo.",
+        contact_direct_title: "Canales Directos",
+        contact_direct_sub: "Estamos listos para atenderle con rapidez y precisión técnica.",
+        lbl_website: "Portal Oficial",
+        form_title: "Envíe un mensaje rápido",
+        form_sub: "Complete los campos a continuación para iniciar conversación con nuestro equipo técnico:",
+        lbl_name: "Su Nombre *",
+        lbl_company: "Empresa / Sector *",
+        lbl_message: "¿Cómo podemos ayudarle? *",
+        btn_send_form: "Enviar mensaje vía WhatsApp",
+        footer_desc: "Sustentando la operación de industrias exigentes con ingeniería de precisión, procesos ágiles y suministros consolidados.",
+        footer_nav_title: "Navegación Rápida",
+        footer_contact_title: "Contacto & Registro",
+        footer_rights: "Todos los derechos reservados.",
+        footer_domain: "Dominio oficial: dgoservicos.com"
+      }
+    };
+
+    function handleLogoError(img) {
+      if (img) {
+        img.style.display = 'none';
+        img.onerror = null;
+      }
+      const crop = document.getElementById('brandLogoCrop');
+      if (crop) crop.style.display = 'none';
+      const fallback = document.getElementById('brandLogoFallback');
+      if (fallback) fallback.style.display = 'flex';
+    }
+
+    let currentLang = 'pt';
+
+    function setLanguage(lang) {
+      currentLang = lang;
+      document.documentElement.lang = (lang === 'pt') ? 'pt-BR' : (lang === 'es' ? 'es' : 'en');
+
+      // Update switcher buttons
+      const ptBtn = document.getElementById('btn-lang-pt');
+      const enBtn = document.getElementById('btn-lang-en');
+      const esBtn = document.getElementById('btn-lang-es');
+      if (ptBtn) ptBtn.classList.toggle('active', lang === 'pt');
+      if (enBtn) enBtn.classList.toggle('active', lang === 'en');
+      if (esBtn) esBtn.classList.toggle('active', lang === 'es');
+
+      // Update text nodes
+      const dict = translations[lang] || translations.pt;
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (dict[key]) {
+          el.innerHTML = dict[key];
+        }
+      });
+
+      // Update form placeholders
+      const nameInput = document.getElementById('userName');
+      const compInput = document.getElementById('userCompany');
+      const msgInput = document.getElementById('userMessage');
+
+      if (lang === 'en') {
+        if (nameInput) nameInput.placeholder = "e.g. John Doe";
+        if (compInput) compInput.placeholder = "e.g. Acme Industrial Group";
+        if (msgInput) msgInput.placeholder = "Briefly describe your project, maintenance or supply requirements...";
+      } else if (lang === 'es') {
+        if (nameInput) nameInput.placeholder = "Ej: Roberto Lima";
+        if (compInput) compInput.placeholder = "Ej: Industria Metalúrgica ABC";
+        if (msgInput) msgInput.placeholder = "Describa brevemente el proyecto, mantenimiento o necesidad de suministros...";
+      } else {
+        if (nameInput) nameInput.placeholder = "Ex: Roberto Lima";
+        if (compInput) compInput.placeholder = "Ex: Indústria Metalúrgica ABC";
+        if (msgInput) msgInput.placeholder = "Descreva brevemente o projeto, manutenção ou necessidade de suprimentos...";
+      }
+
+      localStorage.setItem('dgo_lang', lang);
+    }
+
+    // Mobile Menu Toggle
+    const menuToggle = document.getElementById('menuToggle');
+    const mobileDrawer = document.getElementById('mobileDrawer');
+
+    if (menuToggle && mobileDrawer) {
+      menuToggle.addEventListener('click', () => {
+        const isOpen = mobileDrawer.classList.toggle('open');
+        menuToggle.setAttribute('aria-expanded', isOpen);
+      });
+    }
+
+    function closeMobileNav() {
+      if (mobileDrawer) {
+        mobileDrawer.classList.remove('open');
+      }
+      if (menuToggle) {
+        menuToggle.setAttribute('aria-expanded', 'false');
+      }
+    }
+
+    // Scroll Reveal and Animated Counters
+    let countersStarted = false;
+
+    function startCounters() {
+      if (countersStarted) return;
+      countersStarted = true;
+
+      const counters = document.querySelectorAll('.counter');
+      counters.forEach(counter => {
+        const target = +counter.getAttribute('data-target');
+        let current = 0;
+        const duration = 1600;
+        const steps = 40;
+        const increment = target / steps;
+        const stepTime = duration / steps;
+
+        const timer = setInterval(() => {
+          current += increment;
+          if (current >= target) {
+            counter.innerText = target;
+            clearInterval(timer);
+          } else {
+            counter.innerText = Math.floor(current);
+          }
+        }, stepTime);
+      });
+    }
+
+    function checkReveals() {
+      const reveals = document.querySelectorAll('.reveal');
+      const windowHeight = window.innerHeight;
+
+      reveals.forEach(el => {
+        const elTop = el.getBoundingClientRect().top;
+        if (elTop < windowHeight - 70) {
+          el.classList.add('active');
+        }
+      });
+
+      // Check counter visibility
+      const counterRow = document.getElementById('counterRow');
+      if (counterRow) {
+        const rowTop = counterRow.getBoundingClientRect().top;
+        if (rowTop < windowHeight - 40) {
+          startCounters();
+        }
+      }
+    }
+
+    // Formulário -> WhatsApp
+    function handleFormSubmit(e) {
+      e.preventDefault();
+      const name = document.getElementById('userName').value.trim();
+      const company = document.getElementById('userCompany').value.trim();
+      const message = document.getElementById('userMessage').value.trim();
+
+      const textPt = `Olá DGO Engenharia!\nMeu nome é ${name} da empresa ${company}.\n\n*Mensagem:* ${message}\n\n(Enviado pelo site dgoservicos.com)`;
+      const textEn = `Hello DGO Engineering!\nMy name is ${name} from ${company}.\n\n*Message:* ${message}\n\n(Sent via dgoservicos.com)`;
+      const textEs = `¡Hola DGO Ingeniería!\nMi nombre es ${name} de la empresa ${company}.\n\n*Mensaje:* ${message}\n\n(Enviado desde el sitio dgoservicos.com)`;
+
+      let textToSend = textPt;
+      if (currentLang === 'en') {
+        textToSend = textEn;
+      } else if (currentLang === 'es') {
+        textToSend = textEs;
+      }
+
+      const url = `https://wa.me/5519981252943?text=${encodeURIComponent(textToSend)}`;
+      window.open(url, '_blank');
+    }
+
+    // Init on DOM load
+    document.addEventListener('DOMContentLoaded', () => {
+      // Saved lang check
+      const savedLang = localStorage.getItem('dgo_lang');
+      if (savedLang === 'en' || savedLang === 'pt' || savedLang === 'es') {
+        setLanguage(savedLang);
+      }
+
+      checkReveals();
+      window.addEventListener('scroll', checkReveals, { passive: true });
+    });
+  </script>
+<script>
+/* Skip artifact shell — fixed helpers served beside every artifact. */
+(function () {
+  "use strict";
+
+  var fmt = {
+    num: function (v, opts) { return new Intl.NumberFormat("pt-BR", opts || {}).format(v); },
+    brl: function (v) { return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(v); },
+    pct: function (v) { return new Intl.NumberFormat("pt-BR", { style: "percent", maximumFractionDigits: 1 }).format(v); }
+  };
+
+  // axisFmt keeps axis tick labels short (compact notation) so long values
+  // (e.g. full BRL amounts) never clip against the plot edge.
+  function axisFmt(v) {
+    return fmt.num(v, { notation: "compact", maximumFractionDigits: 1 });
+  }
+
+  // format accepts a function OR one of the fmt names ("num" | "brl" | "pct").
+  function coerceFormat(spec) {
+    if (typeof spec === "function") return spec;
+    if (typeof spec === "string" && fmt[spec]) return fmt[spec];
+    return function (v) { return fmt.num(v); };
+  }
+
+  function accent() {
+    return getComputedStyle(document.documentElement).getPropertyValue("--accent").trim() || "#2563eb";
+  }
+  function mutedColor() {
+    return getComputedStyle(document.documentElement).getPropertyValue("--text-muted").trim() || "#5b6472";
+  }
+  function svgEl(tag, attrs) {
+    var el = document.createElementNS("http://www.w3.org/2000/svg", tag);
+    for (var k in attrs) el.setAttribute(k, attrs[k]);
+    return el;
+  }
+  function frame(el, w, h) {
+    var svg = svgEl("svg", { viewBox: "0 0 " + w + " " + h, role: "img" });
+    el.innerHTML = "";
+    el.appendChild(svg);
+    return svg;
+  }
+
+  // maxOf guards the axis scale: empty values would give -Infinity (truthy,
+  // so "|| 1" can't catch it) and a non-positive max would flip the chart.
+  function maxOf(values) {
+    var m = values.length ? Math.max.apply(null, values) : 0;
+    return m > 0 ? m : 1;
+  }
+
+  // bar(el, {labels:[], values:[], color?, format?}) — vertical bar chart.
+  function bar(el, cfg) {
+    var W = 640, H = 280, padL = 46, padB = 30, padT = 12;
+    var svg = frame(el, W, H);
+    var max = maxOf(cfg.values);
+    var n = cfg.values.length;
+    var plotW = W - padL - 12, plotH = H - padT - padB;
+    var step = plotW / n, bw = Math.min(step * 0.62, 64);
+    var color = cfg.color || accent();
+    var f = coerceFormat(cfg.format);
+    for (var g = 0; g <= 4; g++) {
+      var gy = padT + plotH - (plotH * g) / 4;
+      svg.appendChild(svgEl("line", { x1: padL, y1: gy, x2: W - 12, y2: gy, stroke: "currentColor", "stroke-opacity": 0.08 }));
+      var lbl = svgEl("text", { x: padL - 8, y: gy + 4, "text-anchor": "end", "font-size": 10, fill: mutedColor() });
+      lbl.textContent = axisFmt((max * g) / 4);
+      svg.appendChild(lbl);
+    }
+    cfg.values.forEach(function (v, i) {
+      var bh = Math.max(0, (v / max) * plotH);
+      var x = padL + i * step + (step - bw) / 2;
+      var y = padT + plotH - bh;
+      var r = svgEl("rect", { x: x, y: y, width: bw, height: bh, rx: 4, fill: color });
+      var t = svgEl("title", {});
+      t.textContent = cfg.labels[i] + ": " + f(v);
+      r.appendChild(t);
+      svg.appendChild(r);
+      var tx = svgEl("text", { x: x + bw / 2, y: H - 10, "text-anchor": "middle", "font-size": 11, fill: mutedColor() });
+      tx.textContent = cfg.labels[i];
+      svg.appendChild(tx);
+    });
+  }
+
+  // line(el, {labels:[], values:[], color?, format?}) — single-series line.
+  function line(el, cfg) {
+    var W = 640, H = 280, padL = 46, padB = 30, padT = 12;
+    var svg = frame(el, W, H);
+    var max = maxOf(cfg.values);
+    var n = cfg.values.length;
+    var plotW = W - padL - 16, plotH = H - padT - padB;
+    var color = cfg.color || accent();
+    var f = coerceFormat(cfg.format);
+    for (var g = 0; g <= 4; g++) {
+      var gy = padT + plotH - (plotH * g) / 4;
+      svg.appendChild(svgEl("line", { x1: padL, y1: gy, x2: W - 16, y2: gy, stroke: "currentColor", "stroke-opacity": 0.08 }));
+      var lbl = svgEl("text", { x: padL - 8, y: gy + 4, "text-anchor": "end", "font-size": 10, fill: mutedColor() });
+      lbl.textContent = axisFmt((max * g) / 4);
+      svg.appendChild(lbl);
+    }
+    var pts = cfg.values.map(function (v, i) {
+      var x = padL + (n === 1 ? plotW / 2 : (plotW * i) / (n - 1));
+      var y = padT + plotH - (v / max) * plotH;
+      return [x, y];
+    });
+    var d = pts.map(function (p, i) { return (i ? "L" : "M") + p[0].toFixed(1) + " " + p[1].toFixed(1); }).join(" ");
+    svg.appendChild(svgEl("path", { d: d, fill: "none", stroke: color, "stroke-width": 2, "stroke-linejoin": "round" }));
+    pts.forEach(function (p, i) {
+      var c = svgEl("circle", { cx: p[0], cy: p[1], r: 3.5, fill: color });
+      var t = svgEl("title", {});
+      t.textContent = cfg.labels[i] + ": " + f(cfg.values[i]);
+      c.appendChild(t);
+      svg.appendChild(c);
+      var tx = svgEl("text", { x: p[0], y: H - 10, "text-anchor": "middle", "font-size": 11, fill: mutedColor() });
+      tx.textContent = cfg.labels[i];
+      svg.appendChild(tx);
+    });
+  }
+
+  // donut(el, {labels:[], values:[], colors?}) — donut with center total.
+  function donut(el, cfg) {
+    var W = 320, H = 280, cx = W / 2, cy = H / 2, R = 92, r = 58;
+    var svg = frame(el, W, H);
+    var total = cfg.values.reduce(function (a, b) { return a + b; }, 0) || 1;
+    var palette = cfg.colors || [accent(), "#1baf7a", "#eda100", "#e34948", "#4a3aa7", "#e87ba4"];
+    var a0 = -Math.PI / 2;
+    cfg.values.forEach(function (v, i) {
+      var a1 = a0 + (v / total) * Math.PI * 2;
+      var large = a1 - a0 > Math.PI ? 1 : 0;
+      var p = ["M", cx + R * Math.cos(a0), cy + R * Math.sin(a0),
+        "A", R, R, 0, large, 1, cx + R * Math.cos(a1), cy + R * Math.sin(a1),
+        "L", cx + r * Math.cos(a1), cy + r * Math.sin(a1),
+        "A", r, r, 0, large, 0, cx + r * Math.cos(a0), cy + r * Math.sin(a0), "Z"].join(" ");
+      var path = svgEl("path", { d: p, fill: palette[i % palette.length] });
+      var t = svgEl("title", {});
+      t.textContent = cfg.labels[i] + ": " + fmt.num(v) + " (" + fmt.pct(v / total) + ")";
+      path.appendChild(t);
+      svg.appendChild(path);
+      a0 = a1;
+    });
+    var center = svgEl("text", { x: cx, y: cy + 5, "text-anchor": "middle", "font-size": 20, "font-weight": 650, fill: "currentColor" });
+    center.textContent = fmt.num(total);
+    svg.appendChild(center);
+  }
+
+  window.skipShell = { fmt: fmt };
+  window.skipChart = { bar: bar, line: line, donut: donut };
+})();
+
+</script>
+</body>
+</html>
